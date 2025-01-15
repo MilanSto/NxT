@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "composeLaunchAction": "LaunchBrowser",
+      "composeLaunchServiceName": "clinical_trial_metadata_web",
+      "composeLaunchUrl": "{Scheme}://localhost:{ServicePort}/swagger",
+      "serviceActions": {
+        "clinical_trial_metadata.db": "StartWithoutDebugging",
+        "clinical_trial_metadata_web": "StartDebugging"
+      }
+    }
+  }
+}

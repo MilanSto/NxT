@@ -1,0 +1,26 @@
+version: '3.4'
+
+services:
+  clinical_trial_metadata_web:
+    image: ${DOCKER_REGISTRY-}clinical_trial_metadata_web
+    container_name: clinical_trial_metadata_web
+    build:
+      context: .
+      dockerfile: Presentation/Dockerfile
+    ports:
+      - 5000:80
+      - 5001:443
+    depends_on:
+      - clinical_trial_metadata.db
+
+  clinical_trial_metadata.db:
+    image: postgres:13.2
+    container_name: clinical_trial_metadata_db
+    environment:
+      - POSTGRES_DB=clinicalTrialMetadata
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./files/db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
