@@ -10,11 +10,12 @@ Solutions would of course need more unit tests for each layer, as well as Integr
 using Docker Compose
 
 - Content of the json file I used for testing:
-{
-  "trialId": "12345",
-  "title": "Clinical Trial for Diabetes",
-  "startDate": "2024-01-10",
-  "endDate": "2025-11-10",
-  "participants": 100,
-  "status": "Completed"
-}
+  
+	{
+	  "trialId": "12345",
+	  "title": "Clinical Trial for Diabetes",
+	  "startDate": "2024-01-10",
+	  "endDate": "2025-11-10",
+	  "participants": 100,
+	  "status": "Completed"
+	}
