@@ -8,6 +8,7 @@ Solutions would of course need more unit tests for each layer, as well as Integr
 
 - I implemented Swagger and containerize the application using Docker. There's also a Postgres DB in a Docker container. Both should be started if you run debug in Visual Studio
 using Docker Compose
+- Username and password for Postgres DB is "postgres"
 
 - Content of the json file I used for testing:
   
