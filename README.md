@@ -1,22 +1,20 @@
 Notes:
 	
- - Upload endpoint: I realize that some parts of my implementation should be moved to a separate class, like Json deserialization and schema validation. 
-I didn't do that because I run out of time for proper implementation and because it would also require to be covered by a unit test.
+- Upload endpoint: use below json example in a file to test it.
 
-- Testing: I implemented only basic unit tests covering handlers in Application Layer, and some basic unit tests for Domain Layer. 
+- Testing: Oonly basic unit tests covering handlers in Application Layer, and some basic unit tests for Domain Layer. 
 Solutions would of course need more unit tests for each layer, as well as Integration tests, and Functional Tests whitch should cover bussines use cases etc...
 
-- I implemented Swagger and containerize the application using Docker. There's also a Postgres DB in a Docker container. Both should be started if you run debug in Visual Studio
+- Implemented Swagger and containerize the application using Docker. There's also a Postgres DB in a Docker container. Both should be started if you run debug in Visual Studio
 using Docker Compose
-- Username and password for Postgres DB is "postgres"
 
 - Content of the json file I used for testing:
   
 	{
 	  "trialId": "12345",
 	  "title": "Clinical Trial for Diabetes",
-	  "startDate": "2024-01-10",
-	  "endDate": "2025-11-10",
+  	  "startDate": "2024-07-30T18:00:00.000Z",
+          "endDate": "2025-07-30T18:00:00.000Z",
 	  "participants": 100,
 	  "status": "Completed"
 	}
