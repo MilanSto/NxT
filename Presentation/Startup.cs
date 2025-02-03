@@ -1,20 +1,21 @@
 using Application.Behaviors;
+using Application.ClinicalTrialMetadata.Queries.GetClinicalTrialMetadataById;
 using Domain.Abstractions;
 using FluentValidation;
 using Infrastructure;
-using Infrastructure.Repositories;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Presentation.DTOs;
 using Presentation.Filters;
+using Presentation.Mapper;
 using Presentation.Middleware;
+using Presentation.Settings;
 using System;
-using System.Data;
 using System.IO;
 using System.Text.Json.Serialization;
 
@@ -30,7 +31,7 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        var presentationAssembly = typeof(AssemblyReference).Assembly;
+        services.AddInfrastructure(Configuration);
 
         services.AddControllers()
             .AddJsonOptions(x =>
@@ -52,22 +53,14 @@ public class Startup
             c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, @"Presentation.xml"));
         });
 
-        services.AddDbContext<ApplicationDbContext>(builder =>
-            builder.UseNpgsql(Configuration.GetConnectionString("Application")));
-
-        services.AddScoped<IClinicalTrialMetadataRepository, ClinicalTrialMetadataRepository>();
-
-        services.AddScoped<IUnitOfWork>(
-            factory => factory.GetRequiredService<ApplicationDbContext>());
-
-        services.AddScoped<IDbConnection>(
-            factory => factory.GetRequiredService<ApplicationDbContext>().Database.GetDbConnection());
-
         services.AddTransient<ExceptionHandlingMiddleware>();
 
         services.AddScoped<IJsonSchemaValidator, JsonSchemaValidator>();
 
+        services.Configure<FileUploadSettings>(Configuration.GetSection("FileUploadSettings"));
         services.AddScoped<ValidateFileUploadFilter>();
+
+        services.AddScoped<IMapper<ClinicalTrialMetadataDto, ClinicalTrialMetadataResponse>, ClinicalTrialMetadataMapper>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

@@ -8,10 +8,13 @@ services:
       context: .
       dockerfile: Presentation/Dockerfile
     ports:
-      - 5000:80
-      - 5001:443
+      - "5000:80"
+      - "5001:443"
     depends_on:
       - clinical_trial_metadata.db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=clinical_trial_metadata.db;Database=clinicalTrialMetadata;Username=postgres;Password=${DB_PASSWORD}
 
   clinical_trial_metadata.db:
     image: postgres:13.2
@@ -19,8 +22,16 @@ services:
     environment:
       - POSTGRES_DB=clinicalTrialMetadata
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
-      - ./files/db:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

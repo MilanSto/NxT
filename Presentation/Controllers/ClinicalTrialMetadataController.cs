@@ -3,7 +3,9 @@ using Application.ClinicalTrialMetadata.Queries.GetClinicalTrialMetadataById;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Presentation.DTOs;
 using Presentation.Filters;
+using Presentation.Mapper;
 using System;
 using System.IO;
 using System.Threading;
@@ -14,7 +16,9 @@ namespace Presentation.Controllers;
 /// <summary>
 /// Represents the clinicalTrialMetadatas controller.
 /// </summary>
-public sealed class ClinicalTrialMetadataController : ApiController
+public sealed class ClinicalTrialMetadataController(
+    IMapper<ClinicalTrialMetadataDto, ClinicalTrialMetadataResponse> mapper)
+    : ApiController
 {
     /// <summary>
     /// Gets the metadata with the specified identifier, if it exists.
@@ -26,13 +30,14 @@ public sealed class ClinicalTrialMetadataController : ApiController
     [HttpGet("{trialId:guid}")]
     [ProducesResponseType(typeof(ClinicalTrialMetadataResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetClinicalTrialMetadata(Guid trialId, [FromQuery] string status, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetClinicalTrialMetadata(Guid trialId, CancellationToken cancellationToken)
     {
-        var query = new GetClinicalTrialMetadataByIdQuery(trialId, status);
+        var query = new GetClinicalTrialMetadataByIdQuery(trialId);
 
-        var metadata = await Sender.Send(query, cancellationToken);
+        var response = await Sender.Send(query, cancellationToken);
+        var dto = mapper.Map(response);
 
-        return Ok(metadata);
+        return Ok(dto);
     }
 
     /// <summary>
@@ -50,14 +55,6 @@ public sealed class ClinicalTrialMetadataController : ApiController
             using var streamReader = new StreamReader(file.OpenReadStream());
             var jsonString = await streamReader.ReadToEndAsync(cancellationToken);
 
-            var schema = await System.IO.File.ReadAllTextAsync("Schemas/ClinicalTrialMetadataSchema.json", cancellationToken);
-
-            var validationResult = JsonSchemaValidator.Validate(jsonString, schema);
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(validationResult.Errors);
-            }
-
             var command = JsonConvert.DeserializeObject<CreateClinicalTrialMetadataCommand>(jsonString);
             if (command == null)
             {
@@ -65,12 +62,7 @@ public sealed class ClinicalTrialMetadataController : ApiController
             }
 
             var result = await Sender.Send(command, cancellationToken);
-
             return Ok(result);
-        }
-        catch (JsonException ex)
-        {
-            return BadRequest($"JSON deserialization error: {ex.Message}");
         }
         catch (Exception ex)
         {

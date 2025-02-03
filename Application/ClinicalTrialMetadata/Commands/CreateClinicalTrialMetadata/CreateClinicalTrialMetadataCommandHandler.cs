@@ -20,31 +20,26 @@ internal sealed class CreateClinicalTrialMetadataCommandHandler : ICommandHandle
 
     public async Task<Guid> Handle(CreateClinicalTrialMetadataCommand request, CancellationToken cancellationToken)
     {
-        // Ensure dates are in UTC
-        var startDateUtc = request.StartDate.Kind == DateTimeKind.Utc
-            ? request.StartDate
-            : request.StartDate.ToUniversalTime();
-
         DateTime? endDateUtc = null;
         if (request.EndDate != null)
         {
-            if (request.EndDate <= request.StartDate)
-            {
-                throw new ArgumentException("The end date must be after the start date.");
-            }
-
-            endDateUtc = request.EndDate.Value.Kind == DateTimeKind.Utc
-                ? request.EndDate.Value
-                : request.EndDate.Value.ToUniversalTime();
+            endDateUtc = request.EndDate.Value;
         }
         else if (request.Status == TrialStatus.Ongoing)
         {
-            endDateUtc = startDateUtc.AddMonths(1);
+            endDateUtc = request.StartDate.AddMonths(1);
         }
 
-        var durationInDays = endDateUtc.HasValue ? (endDateUtc.Value - startDateUtc).Days : 0;
+        var durationInDays = endDateUtc.HasValue ? (endDateUtc.Value - request.StartDate).Days : 0;
 
-        var metadata = new Domain.Entities.ClinicalTrialMetadata(Guid.NewGuid(), request.Title, startDateUtc, endDateUtc, request.Participants, request.Status, durationInDays);
+        var metadata = new Domain.Entities.ClinicalTrialMetadata(
+            Guid.NewGuid(), 
+            request.Title, 
+            request.StartDate, 
+            endDateUtc, 
+            request.Participants, 
+            request.Status, 
+            durationInDays);
 
         _clinicalTrialMetadataRepository.Insert(metadata);
 

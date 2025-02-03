@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Infrastructure.Repositories;
 
-public sealed class ClinicalTrialMetadataRepository : IClinicalTrialMetadataRepository
+internal sealed class ClinicalTrialMetadataRepository : IClinicalTrialMetadataRepository
 {
     private readonly ApplicationDbContext _dbContext;
 

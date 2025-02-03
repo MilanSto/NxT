@@ -1,44 +1,53 @@
-﻿using Microsoft.AspNetCore.Http;
+using Application.Behaviors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Configuration;
-using System.Linq;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Presentation.Filters;
-public class ValidateFileUploadFilter : ActionFilterAttribute
+public class ValidateFileUploadFilter : IAsyncActionFilter
 {
-    private readonly IConfiguration _configuration;
-    private readonly long _maxSize;
-    private readonly string[] _allowedTypes;
+    private static readonly string _schema;
 
-    public ValidateFileUploadFilter(IConfiguration configuration)
+    static ValidateFileUploadFilter()
     {
-        _configuration = configuration;
-        _maxSize = _configuration.GetValue<long>("FileUploadSettings:MaxFileSizeInBytes");
-        _allowedTypes = _configuration.GetSection("FileUploadSettings:AllowedFileExtensions").Get<string[]>();
+        _schema = System.IO.File.ReadAllText("Schemas/ClinicalTrialMetadataSchema.json");
     }
 
-    public override void OnActionExecuting(ActionExecutingContext context)
+    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         var file = context.ActionArguments["file"] as IFormFile;
-        if (file == null)
+
+        if (file == null || file.Length == 0)
         {
-            context.Result = new BadRequestObjectResult("No file uploaded.");
+            context.Result = new BadRequestObjectResult("No file was uploaded.");
             return;
         }
 
-        if (!_allowedTypes.Contains(file.ContentType))
+        if (!file.ContentType.Equals("application/json", StringComparison.OrdinalIgnoreCase))
         {
-            context.Result = new BadRequestObjectResult($"File type not allowed. Allowed types: {string.Join(", ", _allowedTypes)}");
+            context.Result = new BadRequestObjectResult("Only JSON files are allowed.");
             return;
         }
 
-        if (file.Length > _maxSize)
+        // Validate JSON schema
+        using var streamReader = new StreamReader(file.OpenReadStream());
+        var jsonString = await streamReader.ReadToEndAsync();
+        
+        var validator = new JsonSchemaValidator();
+        var validationResult = validator.Validate(jsonString, _schema);
+        
+        if (!validationResult.IsValid)
         {
-            context.Result = new BadRequestObjectResult($"File size exceeds the limit of {_maxSize} bytes.");
+            context.Result = new BadRequestObjectResult(validationResult.Errors);
             return;
         }
 
-        base.OnActionExecuting(context);
+        // Reset the position of the stream for the next reader
+        file.OpenReadStream().Position = 0;
+        
+        await next();
     }
-}
+} 

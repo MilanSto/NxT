@@ -19,7 +19,7 @@ public abstract class ApiController : ControllerBase
     /// <summary>
     /// Gets the sender.
     /// </summary>
-    protected ISender Sender => _sender ??= HttpContext.RequestServices.GetService<ISender>();
+    protected ISender Sender => _sender ??= HttpContext.RequestServices.GetService<ISender>();//DI inject trough constructor
 
-    protected IJsonSchemaValidator JsonSchemaValidator => _jsonSchemaValidator ??= new JsonSchemaValidator();
+    protected IJsonSchemaValidator JsonSchemaValidator => _jsonSchemaValidator ??= new JsonSchemaValidator();//DI inject trough constructor
 }

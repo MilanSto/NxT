@@ -19,7 +19,12 @@
             Represents the clinicalTrialMetadatas controller.
             </summary>
         </member>
-        <member name="M:Presentation.Controllers.ClinicalTrialMetadataController.GetClinicalTrialMetadata(System.Guid,System.String,System.Threading.CancellationToken)">
+        <member name="M:Presentation.Controllers.ClinicalTrialMetadataController.#ctor(Presentation.Mapper.IMapper{Presentation.DTOs.ClinicalTrialMetadataDto,Application.ClinicalTrialMetadata.Queries.GetClinicalTrialMetadataById.ClinicalTrialMetadataResponse})">
+            <summary>
+            Represents the clinicalTrialMetadatas controller.
+            </summary>
+        </member>
+        <member name="M:Presentation.Controllers.ClinicalTrialMetadataController.GetClinicalTrialMetadata(System.Guid,System.Threading.CancellationToken)">
             <summary>
             Gets the metadata with the specified identifier, if it exists.
             </summary>
